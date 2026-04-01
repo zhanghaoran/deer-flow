@@ -13,6 +13,7 @@ from deerflow.config.extensions_config import ExtensionsConfig
 from deerflow.config.guardrails_config import load_guardrails_config_from_dict
 from deerflow.config.memory_config import load_memory_config_from_dict
 from deerflow.config.model_config import ModelConfig
+from deerflow.config.proxy_config import load_proxy_config_from_dict
 from deerflow.config.sandbox_config import SandboxConfig
 from deerflow.config.skills_config import SkillsConfig
 from deerflow.config.subagents_config import load_subagents_config_from_dict
@@ -119,6 +120,10 @@ class AppConfig(BaseModel):
         # Load checkpointer config if present
         if "checkpointer" in config_data:
             load_checkpointer_config_from_dict(config_data["checkpointer"])
+
+        # Load proxy config if present
+        if "proxy" in config_data:
+            load_proxy_config_from_dict(config_data["proxy"])
 
         # Always refresh ACP agent config so removed entries do not linger across reloads.
         load_acp_config_from_dict(config_data.get("acp_agents", {}))

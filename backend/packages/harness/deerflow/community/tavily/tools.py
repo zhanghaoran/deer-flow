@@ -1,9 +1,34 @@
 import json
+import logging
 
+import httpx
 from langchain.tools import tool
 from tavily import TavilyClient
 
-from deerflow.config import get_app_config
+from deerflow.config import get_app_config, get_proxy_config
+
+logger = logging.getLogger(__name__)
+
+
+def _get_httpx_proxy_client() -> httpx.Client | None:
+    """Get an httpx client with proxy configuration if enabled.
+
+    Returns:
+        httpx.Client with proxy settings if configured, None otherwise.
+    """
+    proxy_config = get_proxy_config()
+    if proxy_config and proxy_config.is_enabled():
+        proxies = proxy_config.get_proxies_dict()
+        # httpx uses a different proxy format - create mounts for each protocol
+        proxy_mounts = {}
+        if "http" in proxies:
+            proxy_mounts["http://"] = proxies["http"]
+        if "https" in proxies:
+            proxy_mounts["https://"] = proxies["https"]
+        if proxy_mounts:
+            logger.debug(f"Creating httpx client with proxy mounts: {proxy_mounts}")
+            return httpx.Client(proxy_mounts=proxy_mounts)
+    return None
 
 
 def _get_tavily_client() -> TavilyClient:
@@ -11,6 +36,12 @@ def _get_tavily_client() -> TavilyClient:
     api_key = None
     if config is not None and "api_key" in config.model_extra:
         api_key = config.model_extra.get("api_key")
+
+    # Check if proxy is configured and create httpx client with proxy
+    httpx_client = _get_httpx_proxy_client()
+    if httpx_client:
+        return TavilyClient(api_key=api_key, httpx_client=httpx_client)
+
     return TavilyClient(api_key=api_key)
 
 

@@ -23,6 +23,7 @@ _LOCAL_BASH_SYSTEM_PATH_PREFIXES = (
     "/sbin/",
     "/opt/homebrew/bin/",
     "/dev/",
+    "/Users/",  # Allow user home directory on macOS
 )
 
 _DEFAULT_SKILLS_CONTAINER_PATH = "/mnt/skills"

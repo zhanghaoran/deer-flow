@@ -12,7 +12,7 @@
 # ============================================================================
 # Bump this number when the config schema changes.
 # Run `make config-upgrade` to merge new fields into your local config.yaml.
-config_version: 3
+config_version: 4
 
 # ============================================================================
 # Logging
@@ -27,6 +27,24 @@ log_level: info
 # Logs at info level via TokenUsageMiddleware
 token_usage:
   enabled: false
+
+# ============================================================================
+# Proxy Configuration
+# ============================================================================
+# Configure HTTP proxy for web tools (web_search, web_fetch, image_search)
+# All HTTP requests from these tools will be routed through the configured proxy.
+#
+# proxy:
+#   # HTTP proxy URL
+#   http: http://proxy.example.com:8080
+#   # HTTPS proxy URL (often the same as http proxy)
+#   https: http://proxy.example.com:8080
+#   # Optional: Proxy authentication
+#   # username: your_username
+#   # password: your_password
+#   # Or use environment variables:
+#   # username: $PROXY_USERNAME
+#   # password: $PROXY_PASSWORD
 
 # ============================================================================
 # Models Configuration

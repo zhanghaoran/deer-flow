@@ -11,7 +11,21 @@ from typing import Any
 
 import requests
 
+from deerflow.config import get_proxy_config
+
 logger = logging.getLogger(__name__)
+
+
+def _get_proxies() -> dict[str, str] | None:
+    """Get proxy configuration for requests library.
+
+    Returns:
+        Dict with proxy URLs if configured, None otherwise.
+    """
+    proxy_config = get_proxy_config()
+    if proxy_config and proxy_config.is_enabled():
+        return proxy_config.get_proxies_dict()
+    return None
 
 
 class InfoQuestClient:
@@ -62,8 +76,9 @@ class InfoQuestClient:
         data = self._prepare_crawl_request_data(url, return_format)
 
         logger.debug("Sending crawl request to InfoQuest API")
+        proxies = _get_proxies()
         try:
-            response = requests.post("https://reader.infoquest.bytepluses.com", headers=headers, json=data)
+            response = requests.post("https://reader.infoquest.bytepluses.com", headers=headers, json=data, proxies=proxies)
 
             # Check if status code is not 200
             if response.status_code != 200:
@@ -164,7 +179,8 @@ class InfoQuestClient:
         if site != "":
             params["site"] = site
 
-        response = requests.post("https://search.infoquest.bytepluses.com", headers=headers, json=params)
+        proxies = _get_proxies()
+        response = requests.post("https://search.infoquest.bytepluses.com", headers=headers, json=params, proxies=proxies)
         response.raise_for_status()
 
         # Print partial response for debugging
@@ -339,7 +355,8 @@ class InfoQuestClient:
         elif self.image_size:
             logger.warning(f"image_size {self.image_size} is not valid, must be 'l', 'm', or 'i'")
 
-        response = requests.post("https://search.infoquest.bytepluses.com", headers=headers, json=params)
+        proxies = _get_proxies()
+        response = requests.post("https://search.infoquest.bytepluses.com", headers=headers, json=params, proxies=proxies)
         response.raise_for_status()
 
         # Print partial response for debugging

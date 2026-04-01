@@ -7,9 +7,21 @@ import logging
 
 from langchain.tools import tool
 
-from deerflow.config import get_app_config
+from deerflow.config import get_app_config, get_proxy_config
 
 logger = logging.getLogger(__name__)
+
+
+def _get_ddgs_proxies() -> dict[str, str] | None:
+    """Get proxy configuration for DDGS.
+
+    Returns:
+        Dict with proxy URLs if configured, None otherwise.
+    """
+    proxy_config = get_proxy_config()
+    if proxy_config and proxy_config.is_enabled():
+        return proxy_config.get_proxies_dict()
+    return None
 
 
 def _search_text(
@@ -36,7 +48,8 @@ def _search_text(
         logger.error("ddgs library not installed. Run: pip install ddgs")
         return []
 
-    ddgs = DDGS(timeout=30)
+    proxies = _get_ddgs_proxies()
+    ddgs = DDGS(timeout=30, proxies=proxies)
 
     try:
         results = ddgs.text(
