@@ -19,15 +19,25 @@ def _get_httpx_proxy_client() -> httpx.Client | None:
     proxy_config = get_proxy_config()
     if proxy_config and proxy_config.is_enabled():
         proxies = proxy_config.get_proxies_dict()
-        # httpx uses a different proxy format - create mounts for each protocol
-        proxy_mounts = {}
-        if "http" in proxies:
-            proxy_mounts["http://"] = proxies["http"]
-        if "https" in proxies:
-            proxy_mounts["https://"] = proxies["https"]
-        if proxy_mounts:
-            logger.debug(f"Creating httpx client with proxy mounts: {proxy_mounts}")
-            return httpx.Client(proxy_mounts=proxy_mounts)
+        http_proxy = proxies.get("http")
+        https_proxy = proxies.get("https")
+
+        if http_proxy and https_proxy:
+            # Use mounts for different proxies per protocol
+            mounts = {
+                "http://": httpx.HTTPTransport(proxy=http_proxy),
+                "https://": httpx.HTTPTransport(proxy=https_proxy),
+            }
+            logger.debug(f"Creating httpx client with proxy mounts: http={http_proxy}, https={https_proxy}")
+            return httpx.Client(mounts=mounts)
+        elif https_proxy:
+            # Single proxy for all requests
+            logger.debug(f"Creating httpx client with proxy: {https_proxy}")
+            return httpx.Client(proxy=https_proxy)
+        elif http_proxy:
+            # Single proxy for all requests
+            logger.debug(f"Creating httpx client with proxy: {http_proxy}")
+            return httpx.Client(proxy=http_proxy)
     return None
 
 
