@@ -38,6 +38,7 @@ coverage/
 .deer-flow/
 .claude/
 skills/custom/*
+skills-lock.json
 logs/
 log/
 
