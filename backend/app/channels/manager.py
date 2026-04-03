@@ -12,6 +12,7 @@ from typing import Any
 
 from langgraph_sdk.errors import ConflictError
 
+from app.channels.commands import KNOWN_CHANNEL_COMMANDS
 from app.channels.message_bus import InboundMessage, InboundMessageType, MessageBus, OutboundMessage, ResolvedAttachment
 from app.channels.store import ChannelStore
 
@@ -66,14 +67,9 @@ def _normalize_custom_agent_name(raw_value: str) -> str:
     """Normalize legacy channel assistant IDs into valid custom agent names."""
     normalized = raw_value.strip().lower().replace("_", "-")
     if not normalized:
-        raise InvalidChannelSessionConfigError(
-            "Channel session assistant_id is empty. Use 'lead_agent' or a valid custom agent name."
-        )
+        raise InvalidChannelSessionConfigError("Channel session assistant_id is empty. Use 'lead_agent' or a valid custom agent name.")
     if not CUSTOM_AGENT_NAME_PATTERN.fullmatch(normalized):
-        raise InvalidChannelSessionConfigError(
-            f"Invalid channel session assistant_id {raw_value!r}. "
-            "Use 'lead_agent' or a custom agent name containing only letters, digits, and hyphens."
-        )
+        raise InvalidChannelSessionConfigError(f"Invalid channel session assistant_id {raw_value!r}. Use 'lead_agent' or a custom agent name containing only letters, digits, and hyphens.")
     return normalized
 
 
@@ -740,7 +736,8 @@ class ChannelManager:
                 "/help — Show this help"
             )
         else:
-            reply = f"Unknown command: /{command}. Type /help for available commands."
+            available = " | ".join(sorted(KNOWN_CHANNEL_COMMANDS))
+            reply = f"Unknown command: /{command}. Available commands: {available}"
 
         outbound = OutboundMessage(
             channel_name=msg.channel_name,
