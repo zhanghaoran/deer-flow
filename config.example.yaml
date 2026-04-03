@@ -275,6 +275,13 @@ tools:
     use: deerflow.community.jina_ai.tools:web_fetch_tool
     timeout: 10
 
+  # Web fetch tool for JavaScript-heavy pages (uses Crawl4AI with browser rendering)
+  # Slower but more powerful. Use as fallback when web_fetch fails on JS pages.
+  # Requires: pip install crawl4ai && playwright install chromium
+  # - name: crawl4ai_fetch
+  #   group: web
+  #   use: deerflow.community.crawl4ai.tools:crawl4ai_fetch_tool
+
   # Web fetch tool (uses InfoQuest)
   # - name: web_fetch
   #   group: web
