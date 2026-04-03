@@ -55,13 +55,7 @@ async def task_tool(
         description: A short (3-5 word) description of the task for logging/display. ALWAYS PROVIDE THIS PARAMETER FIRST.
         prompt: The task description for the subagent. Be specific and clear about what needs to be done. ALWAYS PROVIDE THIS PARAMETER SECOND.
         subagent_type: The type of subagent to use. ALWAYS PROVIDE THIS PARAMETER THIRD.
-        max_turns: Optional maximum number of agent turns. Defaults to 50 for general-purpose, 30 for bash.
-            Recommended ranges based on task complexity:
-            - Simple tasks (single file, quick lookup): 20-30
-            - Medium complexity (multi-file edits, analysis): 30-50
-            - Complex tasks (feature implementation, refactoring): 50-100
-            - Very complex tasks (cross-module changes, extensive exploration): 100-200
-            Only specify this if the task clearly needs more or fewer turns than the default.
+        max_turns: Optional maximum agent turns. Default: 50 for general-purpose, 30 for bash. Use 20-30 for simple tasks, 30-50 for medium, 50-100 for complex, 100-200 for very complex tasks. Only set if task needs more/fewer turns than default.
     """
     # Get subagent configuration
     config = get_subagent_config(subagent_type)
