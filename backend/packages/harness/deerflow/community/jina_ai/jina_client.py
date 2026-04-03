@@ -1,11 +1,13 @@
 import logging
 import os
 
-import requests
+import httpx
 
 from deerflow.config import get_proxy_config
 
 logger = logging.getLogger(__name__)
+
+_api_key_warned = False
 
 
 def _get_proxies() -> dict[str, str] | None:
@@ -21,7 +23,8 @@ def _get_proxies() -> dict[str, str] | None:
 
 
 class JinaClient:
-    def crawl(self, url: str, return_format: str = "html", timeout: int = 10) -> str:
+    async def crawl(self, url: str, return_format: str = "html", timeout: int = 10) -> str:
+        global _api_key_warned
         headers = {
             "Content-Type": "application/json",
             "X-Return-Format": return_format,
@@ -29,12 +32,18 @@ class JinaClient:
         }
         if os.getenv("JINA_API_KEY"):
             headers["Authorization"] = f"Bearer {os.getenv('JINA_API_KEY')}"
-        else:
+        elif not _api_key_warned:
+            _api_key_warned = True
             logger.warning("Jina API key is not set. Provide your own key to access a higher rate limit. See https://jina.ai/reader for more information.")
         data = {"url": url}
         proxies = _get_proxies()
         try:
-            response = requests.post("https://r.jina.ai/", headers=headers, json=data, proxies=proxies)
+            proxy = None
+            if proxies:
+                # httpx uses a single proxy URL or a dict with http/https keys
+                proxy = proxies.get("https") or proxies.get("http")
+            async with httpx.AsyncClient(proxy=proxy) as client:
+                response = await client.post("https://r.jina.ai/", headers=headers, json=data, timeout=timeout)
 
             if response.status_code != 200:
                 error_message = f"Jina API returned status {response.status_code}: {response.text}"
@@ -49,5 +58,5 @@ class JinaClient:
             return response.text
         except Exception as e:
             error_message = f"Request to Jina API failed: {str(e)}"
-            logger.error(error_message)
+            logger.exception(error_message)
             return f"Error: {error_message}"
